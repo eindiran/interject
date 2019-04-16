@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+#===============================================================================
+#
+#          FILE: interject
+# 
+#         USAGE: ./interject [-s] [-e <editor>] [-t <tempdir>]
+# 
+#   DESCRIPTION: Inserts itself between curl and the shell to allow the user to
+#                examine what is being run, then choose whether to execute the
+#                script or not.
+# 
+#       OPTIONS: ---
+#  REQUIREMENTS: moreutils for sponge; EDITOR and TEMPDIR to use non-defaults
+#        AUTHOR: Elliott Indiran <elliott.indiran@protonmail.com>
+#
+#===============================================================================
+
+set -Eeuo pipefail
+
+INTERJECT_TEMPDIR="${TEMPDIR:-}"
+INTERJECT_EDITOR="${EDITOR:-}"
+INTERJECT_SPONGE=false
+TEMPLATE='tmp.interject.XXXXXXXXXX'
+
+usage() {
+    # Print out help info
+    {
+        printf "Usage: %s [-s] [-e <editor>] [-t <tempdir>]\n\n" "$0"
+        printf "Options:\n"
+        printf "     -s: Use sponge to capture all curl output before piping.\n"
+        printf "     -e: Set editor used to <editor>.\n"
+        printf "         Defaults to EDITOR if found, vim otherwise\n"
+        printf "     -t: Set temp director to <tempdir>.\n"
+        printf "         Defaults to TEMPDIR if found, /tmp otherwise\n"
+        printf "     -h: Print the usage and exit.\n\n"
+    } 1>&2
+}
+
+while getopts ":e:t:sh" options; do
+    case "${options}" in
+        e)
+            INTERJECT_EDITOR="${OPTARG}"
+            ;;
+        t)
+            INTERJECT_TEMPDIR="${OPTARG}"
+            ;;
+        :)
+            echo "Error: -${OPTARG} requires an argument." 1>&2
+            usage
+            exit 1
+            ;;
+        s)
+            INTERJECT_SPONGE=true
+            ;;
+        h)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown option." 1>&2
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+
+if [ ! -d "$INTERJECT_TEMPDIR" ] ; then
+    INTERJECT_TEMPDIR=/tmp
+fi
+
+cleanup() {
+    # Always run on exit
+    # Remove script file
+    if [ -e "$TEMPFILE" ] ; then
+        rm -f "$TEMPFILE"
+    fi
+    # Remove the generated Interject directory
+    if [ -d "$INTERJECT_TEMPDIR"/interject ] ; then
+        rmdir --ignore-fail-on-non-empty "$INTERJECT_TEMPDIR"/interject
+    fi
+}
+
+trap "cleanup" EXIT
+
+mkdir -p "$INTERJECT_TEMPDIR"/interject
+TEMPFILE="$(mktemp -p "$INTERJECT_TEMPDIR"/interject -t $TEMPLATE)"
+
+# Add notes to beginning of file
+{
+    printf "# Interject: make changes to this script here.\n"
+    printf "# Once finished, save & exit to run it.\n"
+    printf "# To stop the script from running, exit with an error code\n"
+    printf "# or delete all lines in the script.\n"
+    printf "# In vi(m) use :cq to exit with an error code.\n\n"
+} > "$TEMPFILE"
+
+# Append stdin to our temp file
+if [ "$INTERJECT_SPONGE" ] ; then
+    cat | sponge >> "$TEMPFILE"
+else
+    cat >> "$TEMPFILE"
+fi
+
+# Open the temp file in our editor, defaulting to system copy
+# of vim if EDITOR dne
+if [ "$(command -v "$INTERJECT_EDITOR")" ] ; then
+    "${INTERJECT_EDITOR}" "$TEMPFILE" > /dev/tty
+    EXIT_CODE="$?"
+else
+    /usr/bin/env vim "$TEMPFILE" > /dev/tty
+    EXIT_CODE="$?"
+fi
+
+if [ "$EXIT_CODE" -ne 0 ] ; then
+    printf "Editor exited with error code %d\n" "$EXIT_CODE" 1>&2
+    exit "$EXIT_CODE"
+else
+    # Editor saved and exited correctly
+    # Forward the script to the shell
+    cat "$TEMPFILE"
+fi
