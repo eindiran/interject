@@ -81,7 +81,8 @@ cleanup() {
     fi
 }
 
-trap "cleanup" EXIT
+trap 'cleanup' EXIT
+trap 'cleanup' ERR
 
 mkdir -p "$INTERJECT_TEMPDIR"/interject
 TEMPFILE="$(mktemp -p "$INTERJECT_TEMPDIR"/interject -t $TEMPLATE)"
@@ -106,17 +107,10 @@ fi
 # of vim if EDITOR dne
 if [ "$(command -v "$INTERJECT_EDITOR")" ] ; then
     "${INTERJECT_EDITOR}" "$TEMPFILE" > /dev/tty
-    EXIT_CODE="$?"
 else
     /usr/bin/env vim "$TEMPFILE" > /dev/tty
-    EXIT_CODE="$?"
 fi
 
-if [ "$EXIT_CODE" -ne 0 ] ; then
-    printf "Editor exited with error code %d\n" "$EXIT_CODE" 1>&2
-    exit "$EXIT_CODE"
-else
-    # Editor saved and exited correctly
-    # Forward the script to the shell
-    cat "$TEMPFILE"
-fi
+# Editor saved and exited correctly
+# Forward the script to the shell
+cat "$TEMPFILE"
