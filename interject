@@ -3,14 +3,14 @@
 #
 #          FILE: interject
 # 
-#         USAGE: ./interject [-s] [-e <editor>] [-t <tempdir>]
+#         USAGE: ./interject [-e <editor>] [-t <tempdir>]
 # 
 #   DESCRIPTION: Inserts itself between curl and the shell to allow the user to
 #                examine what is being run, then choose whether to execute the
 #                script or not.
 # 
-#       OPTIONS: -s, -e <editor>, -t <tempdir>
-#  REQUIREMENTS: moreutils for sponge; EDITOR and TEMPDIR to use non-defaults
+#       OPTIONS: -e <editor>, -t <tempdir>
+#  REQUIREMENTS: None
 #        AUTHOR: Elliott Indiran <elliott.indiran@protonmail.com>
 #       VERSION: 1.0.0
 #
@@ -20,15 +20,13 @@ set -Eeuo pipefail
 
 INTERJECT_TEMPDIR="${TEMPDIR:-}"
 INTERJECT_EDITOR="${EDITOR:-}"
-INTERJECT_SPONGE=false
 TEMPLATE='tmp.interject.XXXXXXXXXX'
 
 usage() {
     # Print out help info
     {
-        printf "Usage: %s [-s] [-e <editor>] [-t <tempdir>]\n\n" "$0"
+        printf "Usage: %s [-e <editor>] [-t <tempdir>]\n\n" "$0"
         printf "Options:\n"
-        printf "     -s: Use sponge to capture all curl output before piping.\n"
         printf "     -e: Set editor used to <editor>.\n"
         printf "         Defaults to EDITOR if found, vim otherwise\n"
         printf "     -t: Set temp director to <tempdir>.\n"
@@ -49,9 +47,6 @@ while getopts ":e:t:sh" options; do
             echo "Error: -${OPTARG} requires an argument." 1>&2
             usage
             exit 1
-            ;;
-        s)
-            INTERJECT_SPONGE=true
             ;;
         h)
             usage
@@ -98,11 +93,7 @@ TEMPFILE="$(mktemp -p "$INTERJECT_TEMPDIR"/interject -t $TEMPLATE)"
 } > "$TEMPFILE"
 
 # Append stdin to our temp file
-if [ "$INTERJECT_SPONGE" ] ; then
-    cat | sponge >> "$TEMPFILE"
-else
-    cat >> "$TEMPFILE"
-fi
+cat >> "$TEMPFILE"
 
 # Open the temp file in our editor, defaulting to system copy
 # of vim if EDITOR dne
