@@ -1,9 +1,9 @@
 .\" Manpage for interject.
 .TH INTERJECT "1" "April 2019" "interject 1.0.0" "User Commands"
 .SH NAME
-interject \- Inspect and edit the contents of a pipe
+\fBinterject\fP \- Inspect and edit the contents of a pipe
 .SH SYNOPSIS
-command1 | interject [-s] [-e EDITOR] [-t TEMPDIR] | command2
+command1 | \fBinterject\fP [\fB-s\fP] [\fB-e <EDITOR>\fP] [\fB-t <TEMPDIR>\fP] | command2
 .SH DESCRIPTION
 .B interject(1)
 is a tool for inspecting the contents of a pipe with an editor.
@@ -44,22 +44,23 @@ Use
 to drain the pipe before attempting to open it in the editor.
 .PP
 .TP
-.BR \-e " " EDITOR
-Set the editor used to view the pipe to \fBEDITOR\fP.
+.BR \-e " " <EDITOR>
+Set the editor used to view the pipe to \fB<EDITOR>\fP.
 .PP
 .TP
-.BR \-t " " TEMPDIR
-Set the temporary directory used by
-.B interject(1)
-to \fBTEMPDIR\fP.
+.BR \-t " " <TEMPDIR>
+Set the temporary directory to \fB<TEMPDIR>\fP.
 .SH EXAMPLES
 .TP
 command1 | interject -e emacs | command2
-Pipe the contents of \fBcommand1\fP into a temporary file, then read that file with \fBemacs\fP; if \fBemacs\fP closes without an error code, pipe the input into \fBcommand2\fP.
+Pipe the contents of \fBcommand1\fP into a temporary file, then read that file with \fBemacs(1)\fP; if \fBemacs(1)\fP closes without an error code, pipe the input into \fBcommand2\fP.
+.TP
 command1 | interject -t /temp_dir | command2
 Use the temporary directory \fI/temp_dir/\fP instead of \fI/tmp/\fP or \fBTEMPDIR\fP.
+.TP
 curl www.example.com | interject -s | bash
-Use \fBsponge\fP to capture the entire output of \fBcurl\fP, then edit it in the default \fBEDITOR\fP; if there are no problems, run the pipe as a script using \fBbash\fP.
+Use \fBsponge(1)\fP to capture the entire output of \fBcurl(1)\fP, then edit it in the default \fBEDITOR\fP; if there are no problems, run the pipe as a script using \fBbash(1)\fP.
+.TP
 interject -h
 Display the usage info for \fBinterject(1)\fP.
 .SH SEE ALSO
