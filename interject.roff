@@ -53,14 +53,23 @@ Set the temporary directory used by
 .B interject(1)
 to \fBTEMPDIR\fP.
 .SH EXAMPLES
-.nf
-.RS
+.TP
 command1 | interject -e emacs | command2
+Pipe the contents of \fBcommand1\fP into a temporary file, then read that file with \fBemacs\fP; if \fBemacs\fP closes without an error code, pipe the input into \fBcommand2\fP.
 command1 | interject -t /temp_dir | command2
+Use the temporary directory \fI/temp_dir/\fP instead of \fI/tmp/\fP or \fBTEMPDIR\fP.
 curl www.example.com | interject -s | bash
+Use \fBsponge\fP to capture the entire output of \fBcurl\fP, then edit it in the default \fBEDITOR\fP; if there are no problems, run the pipe as a script using \fBbash\fP.
 interject -h
-.fi
+Display the usage info for \fBinterject(1)\fP.
 .SH SEE ALSO
 .BR vipe(1)
 .SH AUTHOR
 Elliott Indiran <elliott.indiran@protonmail.com>
+.SH BUGS
+Report bugs here: \fIhttps://github.com/eindiran/interject\fP
+.SH COPYRIGHT
+Copyright © 2019 Elliott Indiran.
+License: MIT <https://mit-license.org/>
+This is free software: you are free to make changes to it for any purpose.
+There is \fBNO WARRANTY\fP, to the extent permitted by law.
