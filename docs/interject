@@ -1,0 +1,66 @@
+.\" Manpage for interject.
+.TH INTERJECT "1" "April 2019" "interject 1.0.0" "User Commands"
+.SH NAME
+interject \- Inspect and edit the contents of a pipe
+.SH SYNOPSIS
+command1 | interject [-s] [-e EDITOR] [-t TEMPDIR] | command2
+.SH DESCRIPTION
+.B interject(1)
+is a tool for inspecting the contents of a pipe with an editor.
+This is particularly useful in the case where you plan on piping a script retrieved by
+.BR curl(1)
+into a shell directly.
+.B interject(1)
+is an alternative to
+.BR vipe(1)
+that allows the user to control the tool with flags, in addition to environment variables.
+.SH ENVIRONMENT VARIABLES
+.TP
+.B EDITOR
+If the
+.B \-e
+option is not used,
+.B interject(1)
+will use the editor set in this environment variable.
+If the variable is unset,
+.B interject(1)
+will default to using
+.BR vim(1)
+.PP
+.TP
+.B TEMPDIR
+If the
+.B \-t
+option is not  used,
+.B interject(1)
+will use a temporary directory set in this environment variable.
+If the variable is unset, the temporary directory used will default to
+.I /tmp
+.SH OPTIONS
+.TP
+.BR \-s
+Use
+.BR sponge(1)
+to drain the pipe before attempting to open it in the editor.
+.PP
+.TP
+.BR \-e " " EDITOR
+Set the editor used to view the pipe to \fBEDITOR\fP.
+.PP
+.TP
+.BR \-t " " TEMPDIR
+Set the temporary directory used by
+.B interject(1)
+to \fBTEMPDIR\fP.
+.SH EXAMPLES
+.nf
+.RS
+command1 | interject -e emacs | command2
+command1 | interject -t /temp_dir | command2
+curl www.example.com | interject -s | bash
+interject -h
+.fi
+.SH SEE ALSO
+.BR vipe(1)
+.SH AUTHOR
+Elliott Indiran <elliott.indiran@protonmail.com>

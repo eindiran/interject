@@ -9,9 +9,10 @@
 #                examine what is being run, then choose whether to execute the
 #                script or not.
 # 
-#       OPTIONS: ---
+#       OPTIONS: -s, -e <editor>, -t <tempdir>
 #  REQUIREMENTS: moreutils for sponge; EDITOR and TEMPDIR to use non-defaults
 #        AUTHOR: Elliott Indiran <elliott.indiran@protonmail.com>
+#       VERSION: 1.0.0
 #
 #===============================================================================
 
