@@ -3,7 +3,7 @@
 #
 #          FILE: interject
 # 
-#         USAGE: ./interject [-e <editor>] [-t <tempdir>]
+#         USAGE: ./interject [-n] [-e <editor>] [-t <tempdir>]
 # 
 #   DESCRIPTION: Inserts itself between curl and the shell to allow the user to
 #                examine what is being run, then choose whether to execute the
@@ -20,6 +20,7 @@ set -Eeuo pipefail
 
 INTERJECT_TEMPDIR="${TEMPDIR:-}"
 INTERJECT_EDITOR="${EDITOR:-}"
+INTERJECT_SPONGE=true
 TEMPLATE='tmp.interject.XXXXXXXXXX'
 
 usage() {
@@ -31,11 +32,12 @@ usage() {
         printf "         Defaults to EDITOR if found, vim otherwise\n"
         printf "     -t: Set temp director to <tempdir>.\n"
         printf "         Defaults to TEMPDIR if found, /tmp otherwise\n"
+        printf "     -n: Don't wait for the input pipe to complete before opening in EDITOR.\n"
         printf "     -h: Print the usage and exit.\n\n"
     } 1>&2
 }
 
-while getopts ":e:t:sh" options; do
+while getopts ":e:t:nh" options; do
     case "${options}" in
         e)
             INTERJECT_EDITOR="${OPTARG}"
@@ -47,6 +49,9 @@ while getopts ":e:t:sh" options; do
             echo "Error: -${OPTARG} requires an argument." 1>&2
             usage
             exit 1
+            ;;
+        n)
+            INTERJECT_SPONGE=false
             ;;
         h)
             usage
@@ -93,7 +98,11 @@ TEMPFILE="$(mktemp -p "$INTERJECT_TEMPDIR"/interject -t $TEMPLATE)"
 } > "$TEMPFILE"
 
 # Append stdin to our temp file
-cat >> "$TEMPFILE"
+if [[ ! "$INTERJECT_SPONGE" ]] ; then
+    cat >> "$TEMPFILE" &
+else
+    cat >> "$TEMPFILE"
+fi
 
 # Open the temp file in our editor, defaulting to system copy
 # of vim if EDITOR dne
