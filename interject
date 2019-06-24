@@ -12,7 +12,7 @@
 #       OPTIONS: -e <editor>, -t <tempdir>
 #  REQUIREMENTS: None
 #        AUTHOR: Elliott Indiran <elliott.indiran@protonmail.com>
-#       VERSION: 1.0.0
+#       VERSION: 1.0.1
 #
 #===============================================================================
 
@@ -21,7 +21,7 @@ set -Eeuo pipefail
 INTERJECT_TEMPDIR="${TEMPDIR:-}"
 INTERJECT_EDITOR="${EDITOR:-}"
 INTERJECT_SPONGE=true
-TEMPLATE='tmp.interject.XXXXXXXXXX'
+TEMPLATE="tmp.interject.XXXXXXXXXX"
 
 usage() {
     # Print out help info
@@ -77,8 +77,9 @@ cleanup() {
         rm -f "$TEMPFILE"
     fi
     # Remove the generated Interject directory
+    # Make sure rm will fail if INTERJECT_TEMPDIR is unset
     if [ -d "$INTERJECT_TEMPDIR"/interject ] ; then
-        rmdir --ignore-fail-on-non-empty "$INTERJECT_TEMPDIR"/interject
+        rm -rf "${INTERJECT_TEMPDIR:?}"/interject
     fi
 }
 
@@ -86,7 +87,7 @@ trap 'cleanup' EXIT
 trap 'cleanup' ERR
 
 mkdir -p "$INTERJECT_TEMPDIR"/interject
-TEMPFILE="$(mktemp -p "$INTERJECT_TEMPDIR"/interject -t $TEMPLATE)"
+TEMPFILE="$(mktemp "$INTERJECT_TEMPDIR"/interject/$TEMPLATE)"
 
 # Add notes to beginning of file
 {
